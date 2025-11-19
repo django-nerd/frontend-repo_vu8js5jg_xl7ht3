@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import CircleCard from './CircleCard'
-
-const API = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
+import { fetchJSON } from '../utils/api'
 
 export default function JourneyBuilder() {
   const [circles, setCircles] = useState([])
@@ -19,8 +18,10 @@ export default function JourneyBuilder() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(`${API}/api/inferno/circles`)
-        const data = await res.json()
+        const data = await fetchJSON('/api/inferno/circles', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        })
         setCircles(data)
       } catch (e) {
         setError('Failed to fetch circles')
@@ -34,12 +35,11 @@ export default function JourneyBuilder() {
   const buildJourney = async () => {
     setSubmitting(true)
     try {
-      const res = await fetch(`${API}/api/inferno/journey`, {
+      const data = await fetchJSON('/api/inferno/journey', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mood, interest, intensity })
       })
-      const data = await res.json()
       setJourney(data)
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
     } catch (e) {

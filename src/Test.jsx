@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { fetchJSON, getBackendBase } from './utils/api'
 
 function Test() {
   const [backendStatus, setBackendStatus] = useState('checking...')
@@ -11,49 +12,29 @@ function Test() {
 
   const checkBackendConnection = async () => {
     try {
-      // Get backend URL from environment variable
-      const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
-      setBackendUrl(baseUrl)
+      const base = await getBackendBase()
+      setBackendUrl(base)
 
-      // Test basic backend connectivity
-      const response = await fetch(`${baseUrl}`, {
+      const data = await fetchJSON('/', {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       })
+      setBackendStatus(`✅ Connected - ${data.message || 'OK'}`)
 
-      if (response.ok) {
-        const data = await response.json()
-        setBackendStatus(`✅ Connected - ${data.message || 'OK'}`)
-        
-        // Now test database connectivity
-        await checkDatabaseConnection(baseUrl)
-      } else {
-        setBackendStatus(`❌ Failed - ${response.status} ${response.statusText}`)
-        setDatabaseStatus({ error: 'Backend not accessible' })
-      }
+      await checkDatabaseConnection()
     } catch (error) {
       setBackendStatus(`❌ Error - ${error.message}`)
       setDatabaseStatus({ error: 'Backend not accessible' })
     }
   }
 
-  const checkDatabaseConnection = async (baseUrl) => {
+  const checkDatabaseConnection = async () => {
     try {
-      const response = await fetch(`${baseUrl}/test`, {
+      const dbData = await fetchJSON('/test', {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       })
-
-      if (response.ok) {
-        const dbData = await response.json()
-        setDatabaseStatus(dbData)
-      } else {
-        setDatabaseStatus({ error: `Failed to check database - ${response.status}` })
-      }
+      setDatabaseStatus(dbData)
     } catch (error) {
       setDatabaseStatus({ error: `Database check failed - ${error.message}` })
     }

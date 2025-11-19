@@ -1,5 +1,15 @@
 import { motion } from 'framer-motion'
-import Spline from '@splinetool/react-spline'
+import React, { Suspense } from 'react'
+
+const Spline = React.lazy(() => import('@splinetool/react-spline'))
+
+function SafeSpline({ scene }) {
+  return (
+    <Suspense fallback={<div className="w-full h-full" />}> 
+      <Spline scene={scene} onError={() => { /* ignore rendering errors */ }} />
+    </Suspense>
+  )
+}
 
 export default function Hero() {
   return (
@@ -10,7 +20,7 @@ export default function Hero() {
       </div>
 
       <div className="absolute -right-24 -bottom-48 w-[700px] h-[700px] opacity-30 hidden lg:block">
-        <Spline scene="https://prod.spline.design/7oLk0m8-PlaceholderScene/scene.splinecode" />
+        <SafeSpline scene="https://prod.spline.design/7oLk0m8-PlaceholderScene/scene.splinecode" />
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
